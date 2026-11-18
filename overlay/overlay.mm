@@ -337,18 +337,30 @@ static uintptr_t nccGameBase(){
 // Per-game-version offsets (mirror GAME_OFFSETS in runtime/red4ext_hooks.js). A build is recognized only by the
 // code bytes at its own CRTTISystem::Get offset; an unrecognized build gets all-zero offsets and no game calls.
 struct NccOffsets { uintptr_t exec, rttiGet, frameDtor, poolScriptAllocator; };
-static const NccOffsets NCC_OFFSETS_231  = { 0x2173120, 0x2188e8c, 0, 0 };
-static const NccOffsets NCC_OFFSETS_25   = { 0x1099fbc, 0x10b3cac, 0x11ab310, 0x7cddb78 };
-static const NccOffsets NCC_OFFSETS_NONE = { 0, 0, 0, 0 };
-static const uint8_t NCC_FP_25[16]  = { 0xfd,0x7b,0xbf,0xa9,0xfd,0x03,0x00,0x91,0x08,0x7d,0x03,0xd0,0x08,0x01,0x3a,0x91 };
-static const uint8_t NCC_FP_231[16] = { 0xf4,0x4f,0xbe,0xa9,0xfd,0x7b,0x01,0xa9,0xfd,0x43,0x00,0x91,0x08,0xdf,0x02,0xd0 };
+static const NccOffsets NCC_OFFSETS_231   = { 0x2173120, 0x2188e8c, 0, 0 };
+static const NccOffsets NCC_OFFSETS_25    = { 0x1099fbc, 0x10b3cac, 0x11ab310, 0x7cddb78 };
+static const NccOffsets NCC_OFFSETS_GOG25 = { 0x04199118, 0x041b2858, 0x042a4e58, 0x0781b880 };
+static const NccOffsets NCC_OFFSETS_NONE  = { 0, 0, 0, 0 };
+static const uint8_t NCC_FP_25[16]    = { 0xfd,0x7b,0xbf,0xa9,0xfd,0x03,0x00,0x91,0x08,0x7d,0x03,0xd0,0x08,0x01,0x3a,0x91 };
+static const uint8_t NCC_FP_GOG25[16] = { 0xfd,0x7b,0xbf,0xa9,0xfd,0x03,0x00,0x91,0xc8,0x8c,0x02,0x90,0x08,0x01,0x2f,0x91 };
+static const uint8_t NCC_FP_231[16]   = { 0xf4,0x4f,0xbe,0xa9,0xfd,0x7b,0x01,0xa9,0xfd,0x43,0x00,0x91,0x08,0xdf,0x02,0xd0 };
 static const NccOffsets& nccOffsets(){
     static const NccOffsets* off = nullptr;
     if (off) return *off;
     uintptr_t base = nccGameBase();
-    if (base && memcmp((const void*)(base + NCC_OFFSETS_25.rttiGet), NCC_FP_25, 16) == 0) off = &NCC_OFFSETS_25;
-    else if (base && memcmp((const void*)(base + NCC_OFFSETS_231.rttiGet), NCC_FP_231, 16) == 0) off = &NCC_OFFSETS_231;
-    else { off = &NCC_OFFSETS_NONE; olog("unsupported game build: no known code fingerprint matched; native calls disabled"); }
+    if (base && memcmp((const void*)(base + NCC_OFFSETS_25.rttiGet), NCC_FP_25, 16) == 0) {
+        off = &NCC_OFFSETS_25;
+        olog("detected Steam 2.5 build");
+    } else if (base && memcmp((const void*)(base + NCC_OFFSETS_GOG25.rttiGet), NCC_FP_GOG25, 16) == 0) {
+        off = &NCC_OFFSETS_GOG25;
+        olog("detected GOG 2.5 build");
+    } else if (base && memcmp((const void*)(base + NCC_OFFSETS_231.rttiGet), NCC_FP_231, 16) == 0) {
+        off = &NCC_OFFSETS_231;
+        olog("detected 2.3.1 build");
+    } else {
+        off = &NCC_OFFSETS_NONE;
+        olog("unsupported game build: no known code fingerprint matched; native calls disabled");
+    }
     return *off;
 }
 // Caller frame for the executor (code +0x00, locals +0x10/+0x18, ctx +0x40). 2.5 grew CScriptStackFrame

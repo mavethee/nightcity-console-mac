@@ -247,12 +247,14 @@ const GAME_OFFSETS = {
     // that child frames reach through +0x98, so hand-built root frames must initialize it.
     '2.5':   { exec: 0x1099fbc, rttiGet: 0x10b3cac, main: 0x323a0, frameDtor: 0x11ab310, poolScriptAllocator: 0x7cddb78,
                locLookup: 0x1c331f4, poolCString: 0x2c7e4 },
+    '2.5-gog': { exec: 0x04199118, rttiGet: 0x041b2858, frameDtor: 0x042a4e58, poolScriptAllocator: 0x0781b880 },
 };
 // A build is recognized only by the code bytes at its own CRTTISystem::Get offset (first 16 bytes).
 // Anything else is an unsupported build: gameOffsets() returns null and nothing is hooked or called.
 const GAME_FINGERPRINTS = {
-    '2.5':   'fd7bbfa9fd030091087d03d008013a91',
-    '2.3.1': 'f44fbea9fd7b01a9fd43009108df02d0',
+    '2.5':     'fd7bbfa9fd030091087d03d008013a91',
+    '2.5-gog': 'fd7bbfa9fd030091c88c029008012f91',
+    '2.3.1':   'f44fbea9fd7b01a9fd43009108df02d0',
 };
 
 let gameVersion;   // undefined = not detected yet, null = unsupported build
